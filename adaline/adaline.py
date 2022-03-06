@@ -2,20 +2,23 @@ import numpy as np
 
 class Adaline: 
 
-  def __init__(self, eta = 0.01, epochs = 100, random_state = 1): 
+  def __init__(self, X, y, eta = 0.01, epochs = 100, random_state = 1): 
     self.eta          = eta
     self.epochs       = epochs
     self.random_state = random_state
-    self.weights      = []
+    self.X            = X
+    self.y            = y
+    self.weights      = self.initialize_weights()
     self.cost_vector  = []
 
   def net_input(self, X): 
     weighted_sum = np.dot(X, self.weights[1:]) + self.weights[0]
     return weighted_sum
 
-  def initialize_weights(self, X):
+  def initialize_weights(self):
     generator    = np.random.RandomState(self.random_state) 
-    self.weights = generator.normal(loc = 0.0, scale = 0.01, size = 1 + X.shape[1])
+    weights = generator.normal(loc = 0.0, scale = 0.01, size = 1 + self.X.shape[1])
+    return weights
 
   def predict(self, X): 
     return np.where(self.activation_function(self.net_input(X)) >= 0.0, 1, 0)
@@ -24,16 +27,15 @@ class Adaline:
   def activation_function(self, inpt):
     return inpt
 
-  def fit(self, X, y): 
-    self.initialize_weights(X)
+  def fit(self): 
     for epoch in range(self.epochs):
       # Batch gradient descending 
-      inpt   = self.net_input(X)
+      inpt   = self.net_input(self.X)
       output = self.activation_function(inpt)
 
-      errors = y - output
+      errors = self.y - output
 
-      gradient      = self.eta * (X.T.dot(errors))
+      gradient      = self.eta * (self.X.T.dot(errors))
       gradient_bias = self.eta * errors.sum()
 
       self.weights[1:] += gradient
